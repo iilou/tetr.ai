@@ -1,0 +1,19 @@
+all:
+	g++ -I src/include -L src/lib -o main *.cpp -lmingw32 -lSDL2main -lSDL2
+# all: clean compile link run
+
+# test: compile link run
+
+# compile:
+# 	g++ -I src/include -L src/lib *.o -o main *.cpp 
+
+# link:
+# 	g++ -lmingw32 -lSDL2main -lSDL2
+
+# clean:
+# 	del *.o
+
+# run:
+# 	main.exe
+
+
