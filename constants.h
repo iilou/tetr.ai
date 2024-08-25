@@ -16,4 +16,9 @@ const int HOLD{10};
 const int depth{3};
 
 
+const int DIA_DRAW {1};
+const int DIA_EVAL {2};
+const int DIA_CHOOSE {3};
+
+
 #endif // CONSTANTS_H

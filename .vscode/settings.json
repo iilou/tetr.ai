@@ -57,6 +57,7 @@
         "xutility": "cpp",
         "algorithm": "cpp",
         "optional": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "string": "cpp"
     }
 }

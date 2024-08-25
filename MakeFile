@@ -1,5 +1,15 @@
 all:
-	g++ -I src/include -L src/lib -o main *.cpp -lmingw32 -lSDL2main -lSDL2
+	g++ -I src/include -L src/lib -o main *.cpp -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
+
+test_1:
+	g++ -I src/include -L src/lib -o main test.cpp
+
+test_reg:
+	g++ -I src/include -L src/lib -o main AIHeuristics.cpp AIModel.cpp Collision.cpp Piece.cpp
+
+normal:
+	g++ -I src/include -L src/lib -o main *.cpp -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
+
 # all: clean compile link run
 
 # test: compile link run

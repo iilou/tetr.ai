@@ -9,16 +9,20 @@
 class Piece {
     public:
         int x, y, shapeNum, rotation;
-        std::vector<std::vector<int>> shape;
-        std::vector<int> shape_alt;
+        int** shape;
+        int* shape_alt;
+        int shape_size;
+        int size;
 
         Piece(){
             x = 0;
             y = 0;
             shapeNum = -1;
+            shape_size = 0;
             rotation = 0;
-            shape = std::vector<std::vector<int>>(4, std::vector<int>(4, 0));
-            shape_alt = std::vector<int>(16, 0);
+            shape = nullptr;
+            shape_alt = nullptr;
+            size = 0;
         }
         Piece(int shapeNum, int x, int y, int rotation);
 

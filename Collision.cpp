@@ -225,54 +225,91 @@ def remove_piece(piece:'Piece', grid):
 using namespace std;
 
 
-const std::vector<std::vector<std::vector<int>>> shape_alt_here = {
-    {
-        { 1, 0, 1, 1, 1, 2, 1, 3}, // I
-        { 0, 1, 1, 0, 1, 1, 1, 2}, // T
-        { 0, 2, 1, 0, 1, 1, 1, 2}, // L
-        { 0, 0, 1, 2, 1, 0, 1, 1}, // J
-        { 0, 0, 0, 1, 1, 0, 1, 1}, // O
-        { 0, 1, 0, 2, 1, 0, 1, 1}, // S
-        { 0, 0, 0, 1, 1, 1, 1, 2}  // Z
-    },
-    {
-        { 0, 1, 1, 1, 2, 1, 3, 1}, // I
-        { 0, 1, 1, 0, 1, 1, 2, 1}, // T
-        { 0, 0, 0, 1, 1, 1, 2, 1}, // L
-        { 0, 1, 1, 1, 2, 0, 2, 1}, // J
-        { 0, 0, 1, 0, 0, 1, 1, 1}, // O
-        { 0, 0, 1, 0, 1, 1, 2, 1}, // S
-        { 0, 1, 1, 0, 1, 1, 2, 0}  // Z
-    },
-    { // shape[2]
-        { 2, 0, 2, 1, 2, 2, 2, 3}, // I
-        { 1, 0, 1, 1, 1, 2, 2, 1}, // T
-        { 1, 0, 1, 1, 1, 2, 2, 0}, // L
-        { 1, 0, 1, 1, 1, 2, 2, 2}, // J
-        { 0, 0, 0, 1, 1, 0, 1, 1}, // O
-        { 1, 1, 1, 2, 2, 0, 2, 1}, // S
-        { 1, 0, 1, 1, 2, 1, 2, 2}  // Z
-    },
-    { // shape[3]
-        { 2, 0, 2, 1, 2, 2, 2, 3}, // I
-        { 1, 0, 1, 1, 1, 2, 2, 1}, // T
-        { 1, 0, 1, 1, 1, 2, 2, 0}, // L
-        { 1, 0, 1, 1, 1, 2, 2, 2}, // J
-        { 0, 0, 0, 1, 1, 0, 1, 1}, // O
-        { 1, 1, 1, 2, 2, 0, 2, 1}, // S
-        { 1, 0, 1, 1, 2, 1, 2, 2}  // Z
-    }
-};
+// const std::vector<std::vector<std::vector<int>>> shape_alt_here = {
+//     {
+//         { 1, 0, 1, 1, 1, 2, 1, 3}, // I
+//         { 0, 1, 1, 0, 1, 1, 1, 2}, // T
+//         { 0, 2, 1, 0, 1, 1, 1, 2}, // L
+//         { 0, 0, 1, 2, 1, 0, 1, 1}, // J
+//         { 0, 0, 0, 1, 1, 0, 1, 1}, // O
+//         { 0, 1, 0, 2, 1, 0, 1, 1}, // S
+//         { 0, 0, 0, 1, 1, 1, 1, 2}  // Z
+//     },
+//     {
+//         { 0, 1, 1, 1, 2, 1, 3, 1}, // I
+//         { 0, 1, 1, 0, 1, 1, 2, 1}, // T
+//         { 0, 0, 0, 1, 1, 1, 2, 1}, // L
+//         { 0, 1, 1, 1, 2, 0, 2, 1}, // J
+//         { 0, 0, 1, 0, 0, 1, 1, 1}, // O
+//         { 0, 0, 1, 0, 1, 1, 2, 1}, // S
+//         { 0, 1, 1, 0, 1, 1, 2, 0}  // Z
+//     },
+//     { // shape[2]
+//         { 2, 0, 2, 1, 2, 2, 2, 3}, // I
+//         { 1, 0, 1, 1, 1, 2, 2, 1}, // T
+//         { 1, 0, 1, 1, 1, 2, 2, 0}, // L
+//         { 1, 0, 1, 1, 1, 2, 2, 2}, // J
+//         { 0, 0, 0, 1, 1, 0, 1, 1}, // O
+//         { 1, 1, 1, 2, 2, 0, 2, 1}, // S
+//         { 1, 0, 1, 1, 2, 1, 2, 2}  // Z
+//     },
+//     { // shape[3]
+//         { 2, 0, 2, 1, 2, 2, 2, 3}, // I
+//         { 1, 0, 1, 1, 1, 2, 2, 1}, // T
+//         { 1, 0, 1, 1, 1, 2, 2, 0}, // L
+//         { 1, 0, 1, 1, 1, 2, 2, 2}, // J
+//         { 0, 0, 0, 1, 1, 0, 1, 1}, // O
+//         { 1, 1, 1, 2, 2, 0, 2, 1}, // S
+//         { 1, 0, 1, 1, 2, 1, 2, 2}  // Z
+//     }
+// };
 
 
 // const std::pair<int, int> kick_rules
 
+int*** shape_alt_data_here = new int**[4]{
+new int*[7]{
+new int[8]{1, 0, 1, 1, 1, 2, 1, 3, },
+new int[8]{0, 1, 1, 0, 1, 1, 1, 2, },
+new int[8]{0, 2, 1, 0, 1, 1, 1, 2, },
+new int[8]{0, 0, 1, 0, 1, 1, 1, 2, },
+new int[8]{0, 0, 0, 1, 1, 0, 1, 1, },
+new int[8]{0, 1, 0, 2, 1, 0, 1, 1, },
+new int[8]{0, 0, 0, 1, 1, 1, 1, 2, },
+},
+new int*[7]{
+new int[8]{0, 2, 1, 2, 2, 2, 3, 2, },
+new int[8]{0, 1, 1, 1, 1, 2, 2, 1, },
+new int[8]{0, 1, 1, 1, 2, 1, 2, 2, },
+new int[8]{0, 1, 0, 2, 1, 1, 2, 1, },
+new int[8]{0, 0, 0, 1, 1, 0, 1, 1, },
+new int[8]{0, 1, 1, 1, 1, 2, 2, 2, },
+new int[8]{0, 2, 1, 1, 1, 2, 2, 1, },
+},
+new int*[7]{
+new int[8]{2, 0, 2, 1, 2, 2, 2, 3, },
+new int[8]{1, 0, 1, 1, 1, 2, 2, 1, },
+new int[8]{1, 0, 1, 1, 1, 2, 2, 0, },
+new int[8]{1, 0, 1, 1, 1, 2, 2, 2, },
+new int[8]{0, 0, 0, 1, 1, 0, 1, 1, },
+new int[8]{1, 1, 1, 2, 2, 0, 2, 1, },
+new int[8]{1, 0, 1, 1, 2, 1, 2, 2, },
+},
+new int*[7]{
+new int[8]{0, 1, 1, 1, 2, 1, 3, 1, },
+new int[8]{0, 1, 1, 0, 1, 1, 2, 1, },
+new int[8]{0, 0, 0, 1, 1, 1, 2, 1, },
+new int[8]{0, 1, 1, 1, 2, 0, 2, 1, },
+new int[8]{0, 0, 0, 1, 1, 0, 1, 1, },
+new int[8]{0, 0, 1, 0, 1, 1, 2, 1, },
+new int[8]{0, 1, 1, 0, 1, 1, 2, 0, },
+},
+};
 
 
 
 
-
-bool actionFromKey(vector<vector<int>> &grid, Piece &piece, int key) {
+bool actionFromKey(int grid[24][10], Piece &piece, int key) {
     if (key == MOVE_LEFT) {
         move(piece, grid, -1, 0);
         return false;
@@ -286,7 +323,7 @@ bool actionFromKey(vector<vector<int>> &grid, Piece &piece, int key) {
         return false;
     }
     if (key == ROTATE_CLOCKWISE) {
-        rotate(piece, grid);
+        rotate(piece, grid, false);
         return false;
     }
     if (key == ROTATE_COUNTER) {
@@ -303,14 +340,14 @@ bool actionFromKey(vector<vector<int>> &grid, Piece &piece, int key) {
     return false;
 }
 
-void place_piece(Piece &piece, vector<vector<int>> &grid) {
+void place_piece(Piece &piece, int grid[24][10]) {
     grid[piece.y + piece.shape_alt[0]][piece.x + piece.shape_alt[1]] = piece.shapeNum + 1;
     grid[piece.y + piece.shape_alt[2]][piece.x + piece.shape_alt[3]] = piece.shapeNum + 1;
     grid[piece.y + piece.shape_alt[4]][piece.x + piece.shape_alt[5]] = piece.shapeNum + 1;
     grid[piece.y + piece.shape_alt[6]][piece.x + piece.shape_alt[7]] = piece.shapeNum + 1;
 }
 
-bool checkCollision(Piece &piece, vector<vector<int>> &grid, int dx, int dy) {
+bool checkCollision(Piece &piece, int grid[24][10], int dx, int dy) {
     return !(piece.shape_alt[0] + piece.y + dy >= 0 && piece.shape_alt[0] + piece.y + dy < 24 &&
              piece.shape_alt[1] + piece.x + dx >= 0 && piece.shape_alt[1] + piece.x + dx < 10 &&
              grid[piece.shape_alt[0] + piece.y + dy][piece.shape_alt[1] + piece.x + dx] == 0 &&
@@ -325,14 +362,14 @@ bool checkCollision(Piece &piece, vector<vector<int>> &grid, int dx, int dy) {
              grid[piece.shape_alt[6] + piece.y + dy][piece.shape_alt[7] + piece.x + dx] == 0);
 }
 
-bool checkCollisionRotate(vector<int> &shape_alt, vector<vector<int>> &grid, int x, int y) {
+bool checkCollisionRotate(int shape_alt[8], int grid[24][10], int x, int y) {
     return !(shape_alt[0] + y >= 0 && shape_alt[0] + y < 24 && shape_alt[1] + x >= 0 && shape_alt[1] + x < 10 && grid[shape_alt[0] + y][shape_alt[1] + x] == 0 &&
              shape_alt[2] + y >= 0 && shape_alt[2] + y < 24 && shape_alt[3] + x >= 0 && shape_alt[3] + x < 10 && grid[shape_alt[2] + y][shape_alt[3] + x] == 0 &&
              shape_alt[4] + y >= 0 && shape_alt[4] + y < 24 && shape_alt[5] + x >= 0 && shape_alt[5] + x < 10 && grid[shape_alt[4] + y][shape_alt[5] + x] == 0 &&
              shape_alt[6] + y >= 0 && shape_alt[6] + y < 24 && shape_alt[7] + x >= 0 && shape_alt[7] + x < 10 && grid[shape_alt[6] + y][shape_alt[7] + x] == 0);
 }
 
-bool move(Piece& piece, vector<vector<int>> &grid, int dx, int dy) {
+bool move(Piece& piece, int grid[24][10], int dx, int dy) {
     if (!checkCollision(piece, grid, dx, dy)) {
         piece.x += dx;
         piece.y += dy;
@@ -341,128 +378,70 @@ bool move(Piece& piece, vector<vector<int>> &grid, int dx, int dy) {
     return false;
 }
 
-bool rotate(Piece& piece, vector<vector<int>> &grid, bool counterClockwise) {
 
-    int x = piece.x;
-    int y = piece.y;
-    int rotation = (piece.rotation + (counterClockwise ? 3 : 1)) & 0b11;
+// kick_rules rot(4) -> rot(4) | shape(7) | set(5) | 
+int* kick_rules_0 = new int[64]{ // I
+    -2, 0, 1, 0, -2, -1, 1, 2, // 0 -> 1
+    -1, 0, 2, 0, -1, 2, 2, -1, // 0 -> 3
+    -1, 0, 2, 0, -1, 2, 2, -1, // 1 -> 2
+    2, 0, -1, 0, 2, 1, -1, -2, // 1 -> 0
+    2, 0, -1, 0, 2, 1, -1, -2, // 2 -> 3
+    1, 0, -2, 0, 1, -2, -2, 1, // 2 -> 1
+    1, 0, -2, 0, 1, -2, -2, 1, // 3 -> 0
+    -2, 0, 1, 0, -2, -1, 1, 2, // 3 -> 2
+};
+int* kick_rules_1 = new int[64]{// J, L, S, T, Z
+    -1, 0, -1, 1, 0, -2, -1, -2, // 0 -> 1
+    1, 0, 1, 1, 0, -2, 1, -2, // 0 -> 3
+    1, 0, 1, 1, 0, -2, 1, -2, // 1 -> 2
+    1, 0, 1, -1, 0, 2, 1, 2, // 1 -> 0 
+    1, 0, 1, 1, 0, -2, 1, -2, // 2 -> 3
+    -1, 0, -1, -1, 0, 2, -1, 2, // 2 -> 1
+    -1, 0, -1, -1, 0, 2, -1, 2, // 3 -> 0
+    -1, 0, -1, -1, 0, 2, -1, 2, // 3 -> 2
+};
 
-    vector<int> shape_alt = shape_alt_here[rotation][piece.shapeNum];
+bool rotate(Piece& piece, int grid[24][10], bool counterClockwise) {
 
-    if(!checkCollisionRotate(shape_alt, grid, x, y)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
+    if(!counterClockwise) piece.rotate();
+    else piece.rotateBack();
+
+    if (!checkCollision(piece, grid, 0, 0)) {
         return true;
     }
 
-    if(!checkCollisionRotate(shape_alt, grid, x+1, y)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x += 1;
+    int shape = piece.shapeNum;
+
+    if(shape == 4) return false;
+
+    int rotation = piece.rotation*2 + counterClockwise;
+    int* kick;
+    if(shape == 0) kick = kick_rules_0;
+    else kick = kick_rules_1;
+
+    if(!checkCollision(piece, grid, kick[rotation*8], kick[rotation*8+1])){
+        piece.x += kick[rotation*8];
+        piece.y += kick[rotation*8+1];
+        return true;
+    }
+    if(!checkCollision(piece, grid, kick[rotation*8+2], kick[rotation*8+3])){
+        piece.x += kick[rotation*8+2];
+        piece.y += kick[rotation*8+3];
+        return true;
+    }
+    if(!checkCollision(piece, grid, kick[rotation*8+4], kick[rotation*8+5])){
+        piece.x += kick[rotation*8+4];
+        piece.y += kick[rotation*8+5];
+        return true;
+    }
+    if(!checkCollision(piece, grid, kick[rotation*8+6], kick[rotation*8+7])){
+        piece.x += kick[rotation*8+6];
+        piece.y += kick[rotation*8+7];
         return true;
     }
 
-    if(!checkCollisionRotate(shape_alt, grid, x-1, y)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x -= 1;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x, y+1)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.y += 1;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x+1, y+1)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x += 1;
-        piece.y += 1;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x-1, y+1)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x -= 1;
-        piece.y += 1;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x, y+2)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.y += 2;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x+1, y+2)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x += 1;
-        piece.y += 2;
-        return true;
-    }
-
-    if(!checkCollisionRotate(shape_alt, grid, x-1, y+2)){
-        piece.shape_alt = shape_alt;
-        piece.rotation = rotation;
-        piece.x -= 1;
-        piece.y += 2;
-        return true;
-    }
-
-    // // initial spot
-    // if (!checkCollision(piece, grid, 0, 0)) return true;
-
-    // // left-right
-    // if (!checkCollision(piece, grid, 1, 0)) {
-    //     piece.x += 1;
-    //     return true;
-    // }
-    // if (!checkCollision(piece, grid, -1, 0)) {
-    //     piece.x -= 1;
-    //     return true;
-    // }
-
-    // // 1 down
-    // if (!checkCollision(piece, grid, 0, 1)) {
-    //     piece.y += 1;
-    //     return true;
-    // }
-
-    // // 1 down 1 side
-    // if (!checkCollision(piece, grid, 1, 1)) {
-    //     piece.x += 1;
-    //     piece.y += 1;
-    //     return true;
-    // }
-    // if (!checkCollision(piece, grid, -1, 1)) {
-    //     piece.x -= 1;
-    //     piece.y += 1;
-    //     return true;
-    // }
-
-    // // 2 down
-    // if (!checkCollision(piece, grid, 0, 2)) {
-    //     piece.y += 2;
-    //     return true;
-    // }
-
-    // // 2 down 1 side
-    // if (!checkCollision(piece, grid, 1, 2)) {
-    //     piece.x += 1;
-    //     piece.y += 2;
-    //     return true;
-    // }
-    // if (!checkCollision(piece, grid, -1, 2)) {
-    //     piece.x -= 1;
-    //     piece.y += 2;
-    //     return true;
-    // }
+    if(counterClockwise) piece.rotate();
+    else piece.rotateBack();
 
     return false;
 }
@@ -473,13 +452,13 @@ bool rotate(Piece& piece, vector<vector<int>> &grid, bool counterClockwise) {
 
 
 
-void fastDrop(Piece& piece, vector<vector<int>> &grid) {
+void fastDrop(Piece& piece, int grid[24][10]) {
     while (!checkCollision(piece, grid, 0, 1)) {
         piece.y += 1;
     }
 }
 
-bool isTSpin(Piece& piece, vector<vector<int>> &grid, int lastMove) {
+bool isTSpin(Piece& piece, int grid[24][10], int lastMove) {
     if (piece.shapeNum != 1) return false;
     if (lastMove != ROTATE_CLOCKWISE && lastMove != ROTATE_COUNTER) return false;
 
@@ -489,7 +468,10 @@ bool isTSpin(Piece& piece, vector<vector<int>> &grid, int lastMove) {
     corners += piece.x < 0 || piece.y + 2 >= 24 || grid[piece.y + 2][piece.x] != 0;
     corners += piece.x + 2 >= 10 || piece.y + 2 >= 24 || grid[piece.y + 2][piece.x + 2] != 0;
 
-    if (corners >= 3) return true;
+    if (corners >= 3) {
+        // std::cout<<"T-Spin"<<std::endl;
+        return true;
+    }
 
     return false;
 }
@@ -509,7 +491,8 @@ bool isTSpin(Piece& piece, vector<vector<int>> &grid, int lastMove) {
 //     Piece piece = pr.nextPiece();
 
 //     //create empty 24x10 grid
-//     vector<vector<int>> grid(24, vector<int>(10, 0));
+//     // vector<vector<int>> grid(24, vector<int>(10, 0));
+//     int grid[24][10] = {0};
 //     // random grid values
 
 //     for (int i = 0; i < 24; i++) {
@@ -520,39 +503,9 @@ bool isTSpin(Piece& piece, vector<vector<int>> &grid, int lastMove) {
 
 //     // init clock
 //     clock_t start = clock();
-//     // checkCollision x100000
-//     for (int j = 0; j < 1000000; j++){
-//         unordered_set<int> positions;
-//         // int sampleGrid[28][14][4] = {0};
-//         // bool sampleGrid[28][14][4] = {0};
-//         // deque<int> positions;
-//         // deque<int> x;
-//         // deque<int> y;
-//         // deque<int> rotation;
-        
-//         for (int i = 0; i < 100; i++) {
-//             // sampleGrid[(rand() % 24) + 4][(rand() % 10) + 4] = (rand() % 4) + 1;
-//             // sampleGrid[(rand() % 24) + 4][(rand() % 10) + 4][(rand() % 4)] = positionActionToBitString(rand() % 10, rand() % 24, rand() % 4, rand() % 7);
-//             positions.insert(positionActionToBitString(rand() % 10, rand() % 24, rand() % 4, rand() % 7));
-//             // positions.push_back(positionToBitString(rand() % 10, rand() % 24, rand() % 4));
-//             // x.push_back(rand() % 10);
-//             // y.push_back(rand() % 24);
-//             // rotation.push_back(rand() % 4);
-//         }
-
-//         // for (int i = 0; i < 90; i++){
-//         //     // int xx = x.front();
-//         //     // x.pop_front();
-//         //     // int yy = y.front();
-//         //     // y.pop_front();
-//         //     // int rotationr = rotation.front();
-//         //     // rotation.pop_front();
-//         //     // int pos = positions.front();
-//         //     // positions.pop_front();
-//         //     // int xx = (pos >> 6) & 63;
-//         //     // int yy = pos & 63;
-//         //     // int rotationr = pos >> 12;
-//         // }
+//     for(int i = 0; i < 1000000; i++){
+//         // checkCollision(piece, grid, 2, 14);
+//         rotate(piece, grid, false);
 //     }
 //     // end clock
 //     clock_t end = clock();

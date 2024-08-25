@@ -1021,11 +1021,13 @@ int main(int argc, char *argv[])
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <iostream>
 #include <vector>
 
 #include "Piece.h"
+#include "constants.h"
 
 class Game{
     public:
@@ -1034,7 +1036,8 @@ class Game{
         Piece hold_piece;
         std::vector<Piece> piece_queue;
         PieceRandomizer piece_randomizer;
-        std::vector<std::vector<int>> board_real;
+        int board_real[24][10];
+        // int** board_real;
         bool alive;
         bool limbo;
         int pending_lines;
@@ -1056,7 +1059,7 @@ class Game{
         SDL_Rect COORDS_DISPLAY_BORDER;
 
         std::vector<SDL_Rect> COORDS_HOLD;
-        std::vector<SDL_Rect> COORDS_HOLD_PIECE;
+        std::vector<std::vector<std::vector<SDL_Rect>>> COORDS_HOLD_PIECE;
 
         std::vector<SDL_Rect> COORDS_QUEUE;
         std::vector<std::vector<std::vector<std::vector<SDL_Rect>>>> COORDS_QUEUE_PIECE_LIST;
@@ -1068,11 +1071,51 @@ class Game{
 
         int cnt;
 
+        int last_clear;
+        bool was_t_spin;
+        int lifetime_lines_sent;
+
+        std::vector<std::string> clear_text;
+        // std::vector<SDL_Texture*> clear_text_textures;
+        // std::vector<SDL_Texture*> combo_text_textures;
+        // std::vector<SDL_Texture*> b2b_text_textures;
+        // SDL_Texture* lifetime_texture_main;
+        // std::vector<SDL_Texture*> lifetime_texture_digits;
+
+        std::vector<SDL_Texture*> clear_text_textures;
+        SDL_Texture* combo_text_texture;
+        SDL_Texture* b2b_text_texture;
+        SDL_Texture* lifetime_texture;
+
+        std::vector<SDL_Texture*> digit_tex;
+
+        std::vector<SDL_Rect> clear_text_rects;
+        std::vector<SDL_Rect> combo_text_rects;
+        std::vector<SDL_Rect> b2b_text_rects;
+        std::vector<SDL_Rect> lifetime_rects;
+
+        SDL_Color impending_lines_color = {0xe2, 0x1b, 0x1b, 0xff};
+        int impending_lines_indicator_lim = 16;
+        int impending_lines_indicator_width = 4;
+        SDL_Rect impending_lines_indicator_rect;
+
+        int dig_w[10];
+
+        // SDL_Rect clear_text_rect;
+        // SDL_Rect combo_text_rect;
+        // SDL_Rect b2b_text_rect;
+        // SDL_Rect lifetime_rect_main;
+        // std::vector<SDL_Rect> lifetime_rect_digits;
+
+        // TTF_Font* font;
+
         Game(PieceRandomizer pieceRandomizer);
 
-        void reset();
+        void reset(int prandseed = -1);
 
-        int lines_to_send_formula(int full_lines, bool is_t_spin, bool all_clear);
+        void setPieceRandomizer(PieceRandomizer pieceRandomizer);
+
+        int lines_to_send_formula(int full_lines, bool is_t_spin, bool all_clear, int combo, int b2b);
         int check_full_lines(int last_action_key);
         bool append_pending_lines();
         bool find_next_piece();
@@ -1086,9 +1129,134 @@ class Game{
         void on_enemy_line_sent(int lines);
         void request_send_lines(int lines);
         void draw(SDL_Renderer *renderer);
-        bool load_coords(int offset_x, int offset_y, int tile_size, int width, int height);
-        bool load_coords_simple(int tile_size, int offset_x, int offset_y);
-        bool load_coords_next_to(int adj_x, int adj_y, Game game, int tile_size, int margin);
+        bool load_coords(SDL_Renderer* renderer, int offset_x, int offset_y, int tile_size, int width, int height);
+        bool load_coords_simple(SDL_Renderer* renderer, int tile_size, int offset_x, int offset_y);
+        bool load_coords_next_to(SDL_Renderer* renderer, int adj_x, int adj_y, Game game, int tile_size, int margin);
 };
+
+std::pair<int, int> dim_from_tile_size(int tile_size);
+
+class AIGame: public Game{
+    public:
+        std::vector<int> genetic_sequence;
+        int pps_cd;
+        int pps_cd_current;
+        std::vector<int> action_queue;
+
+        int depth;
+
+        AIGame();
+        AIGame(PieceRandomizer pieceRandomizer);
+
+        void reset(int prandseed = -1);
+
+        void set_depth(int depth);
+        void set_pps(int pps);
+        void alter_genetic_sequence(std::vector<int>& spec_a, std::vector<int>& spec_b);
+        void set_genetic_sequence(std::vector<int> genetic_sequence);
+        std::vector<int> filter_action_queue(std::vector<int> queue);
+        bool updateDeltaTime(int dt, SDL_Renderer *renderer, bool diagnostic=false, std::vector<double>* diagnostic_data=nullptr);
+};
+
+class PlayerGame: public Game{
+    public:
+        int move_cd_current = 0;
+        int move_cd = 5;
+        int move_cd_initial = 70;
+        bool move_cd_initial_flag = true;
+
+        int soft_drop_cd_current = 0;
+        int soft_drop_cd = 5;
+        bool soft_drop_cd_initial_flag = true;
+
+        int auto_fall_cd_current = 0;
+        int auto_fall_cd = 1000;
+        int auto_fall_grace = 1700;
+        int auto_fall_grace_initial = 1700;
+        int auto_fall_grace_falloff_factor = 0.95;
+
+        std::vector<bool> key_status = std::vector<bool>(20, false);
+
+        PlayerGame(): Game(PieceRandomizer(100)){
+        }
+
+        PlayerGame(PieceRandomizer pieceRandomizer): Game(pieceRandomizer){
+        }
+
+        void reset(int prandseed = -1){
+            Game::reset(prandseed);
+            this->move_cd_current = 0;
+            this->soft_drop_cd_current = 0;
+            this->auto_fall_cd_current = 0;
+        }
+
+        void set_cds(int initial_move_cd, int move_cd, int soft_drop_cd){
+            this->move_cd_initial = initial_move_cd;
+            this->move_cd = move_cd;
+            this->soft_drop_cd = soft_drop_cd;
+        }
+
+        void on_key_down(SDL_Keycode& key){
+            switch(key){
+                case SDLK_LEFT:
+                    key_status[MOVE_LEFT] = true;
+                    key_status[MOVE_RIGHT] = false;
+                    break;
+                case SDLK_RIGHT:
+                    key_status[MOVE_LEFT] = false;
+                    key_status[MOVE_RIGHT] = true;
+                    break;
+                case SDLK_DOWN:
+                    key_status[SOFT_DROP] = true;
+                    break;
+                case SDLK_UP:
+                    key_status[ROTATE_CLOCKWISE] = true;
+                    break;
+                case SDLK_z:
+                    key_status[ROTATE_COUNTER] = true;
+                    break;
+                case SDLK_c:
+                    key_status[HOLD] = true;
+                    break;
+                case SDLK_SPACE:
+                    key_status[HARD_DROP] = true;
+                    break;
+            }
+        }
+        void on_key_up(SDL_Keycode& key){
+            switch(key){
+                case SDLK_LEFT:
+                    key_status[MOVE_LEFT] = false;
+                    move_cd_initial_flag = true;
+                    break;
+                case SDLK_RIGHT:
+                    key_status[MOVE_RIGHT] = false;
+                    move_cd_initial_flag = true;
+                    break;
+                case SDLK_DOWN:
+                    key_status[SOFT_DROP] = false;
+                    soft_drop_cd_initial_flag = true;
+                    break;
+                case SDLK_UP:
+                    key_status[ROTATE_CLOCKWISE] = false;
+                    break;
+                case SDLK_z:
+                    key_status[ROTATE_COUNTER] = false;
+                    break;
+                case SDLK_c:
+                    key_status[HOLD] = false;
+                    break;
+                case SDLK_SPACE:
+                    key_status[HARD_DROP] = false;
+                    break;
+            }
+        }
+
+        void updateDeltaTime(int dt, SDL_Renderer *renderer);
+
+        SDL_Color ghost_color = {0xb2, 0xb2, 0xb2, 0xff};
+
+};
+
 
 #endif // GAME_H
