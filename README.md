@@ -1,6 +1,6 @@
 Tetris AI app that can train a Tetris bot that can outperform the vast majority of Competitive Tetris Players using a Genetic Learning Algorithm Model built in C++ that can evaluate the best possible next moves, taking into account at most 4 (at depth=2) future pieces at once.
 
-App Features:
+**[  App Features  ]**
   
 -> You start off with you own **personal bot** that has a **randomized evaulation system**
   
