@@ -18,6 +18,7 @@ Tetris AI app that can train a Tetris bot that can outperform the vast majority 
 **[  REQUIRMENTS  ]**
 
     -> MinGW 13.1.0 installed and set in your global PATH variables
+    ->       Download from : [   https://winlibs.com/  ]
     -> All else included in installation folder
 
 
