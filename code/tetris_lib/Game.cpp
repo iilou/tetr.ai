@@ -10,10 +10,10 @@
 
 #include "Piece.h"
 #include "Collision.h"
-#include "AIModel.h"
 #include "constants.h"
-#include "AIHeuristics.h"
 #include "Game.h"
+#include "../model/AIModel.h"
+#include "../model/AIHeuristics.h"
 
 /*
 shapes_2 = [

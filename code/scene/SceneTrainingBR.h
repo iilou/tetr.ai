@@ -2,20 +2,17 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_timer.h>
 
-#include "Game.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
+#include "../tetris_lib/Game.h"
+#include "../tetris_lib/Piece.h"
+#include "../model/AIModel.h"
 
-class SceneTrainingSC{
+#include <vector>
+
+class SceneTrainingBR{
     public:
-
+        
         std::vector<AIGame> AIGAME_L;
-        int line_timer, line_timer_dur;
-        int score_threshold, end_timer, end_timer_dur;
-
+        std::vector<int> gmassoc;
         std::vector<std::vector<int>> grid;
         std::vector<int> genes;
 
@@ -23,19 +20,17 @@ class SceneTrainingSC{
         std::vector<bool> death_status;
         std::vector<int> mother_genetic_sequence;
         std::vector<int> father_genetic_sequence;
+        int generation;
 
         int R,C,COUNT;
 
-        int generation;
-
-        SceneTrainingSC();
+        SceneTrainingBR();
         void init(int r, int c, int count, int s_w, int s_h, int depth, SDL_Renderer* rend, std::vector<int> seq = get_prebuilt(), PieceRandomizer pr = PieceRandomizer(100), int gen=0);
-        void end_game();
-        void update(SDL_Renderer* rend, int dt, SDL_Event* event, bool* isRunning, int* state);
+        void update(SDL_Renderer* rend, int dt, SDL_Event* event, bool* isRunning, int* state);   
 
-        void render(SDL_Renderer* rend);
+        double t_time;
+        std::vector<double> diag;
 
-        
         SDL_Texture* menu_tex;
         SDL_Texture* generation_count_tex;
         std::vector<SDL_Texture*> dig_tex;
@@ -59,6 +54,8 @@ class SceneTrainingSC{
         SDL_Color menu_bg_color;
         SDL_Color generation_count_bg_color;
         SDL_Color confirm_bg_color;
+
+        void render(SDL_Renderer* rend);
 
         bool paused;
 };

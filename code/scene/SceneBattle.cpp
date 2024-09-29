@@ -3,9 +3,9 @@
 #include <vector>
 #include <cassert>
 
-#include "SceneBattle.h"
-#include "Game.h"
+#include "../tetris_lib/Game.h"
 #include "SCENENAV.h"
+#include "SceneBattle.h"
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"

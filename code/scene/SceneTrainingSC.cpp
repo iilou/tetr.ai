@@ -9,12 +9,13 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_timer.h>
 
-#include "Game.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
+
+#include "../tetris_lib/Game.h"
+#include "../tetris_lib/Piece.h"
+#include "../tetris_lib/Collision.h"
+#include "../tetris_lib/constants.h"
+#include "../model/AIHeuristics.h"
+#include "../model/AIModel.h"
 #include "SceneTrainingSC.h"
 #include "SCENENAV.h"
 

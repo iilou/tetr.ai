@@ -10,9 +10,9 @@
 #include <ctime>
 
 #include "AIModel.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
+#include "../tetris_lib/Piece.h"
+#include "../tetris_lib/Collision.h"
+#include "../tetris_lib/constants.h"
 // #include "AIHeuristics.h"
 
 using namespace std;
@@ -57,9 +57,6 @@ int evaluateBoard(vector<int>& genes, int board[24][10], Piece& piece, int lastA
     board[piece.y+piece.shape_alt[4]][piece.x+piece.shape_alt[5]] = 1;
     board[piece.y+piece.shape_alt[6]][piece.x+piece.shape_alt[7]] = 1;
 
-    // time_t s = clock();
-    
-    // time_t time_calc_start = clock();
     // ---------------------------- find clears ----------------------------
     for(int i=piece.y; i<piece.y+4; i++){
         if(i >= 24) break;

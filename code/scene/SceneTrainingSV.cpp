@@ -3,40 +3,42 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
-#include <ctime>
 #include <cmath>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_timer.h>
 
-#include "Game.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
-#include "SceneTrainingBR.h"
+#include "../tetris_lib/Game.h"
+#include "../tetris_lib/Piece.h"
+#include "../tetris_lib/Collision.h"
+#include "../tetris_lib/constants.h"
+#include "../model/AIHeuristics.h"
+#include "../model/AIModel.h"
+#include "SceneTrainingSV.h"
 #include "SCENENAV.h"
 
-
-SceneTrainingBR::SceneTrainingBR(){
+SceneTrainingSV::SceneTrainingSV(){
     R = -1;
     C = -1;
     COUNT = -1;
     death_count = 0;
 
     AIGAME_L = std::vector<AIGame>(10);
-    gmassoc = std::vector<int>(10, 0);
-    genes = get_default();
+    line_timer = 0;
+    line_timer_dur = -1; // 1 second
+    line_timer_factor = 0.96;
+    line_timer_initial = 1000;
+    score_threshold = 999; // max score
+    end_timer = 0;
+    end_timer_dur = 60000; // 1 minute
+
     grid = std::vector<std::vector<int>>(24, std::vector<int>(10, 0));
+    genes = get_default();
 
     death_status = std::vector<bool>(10, false);
     mother_genetic_sequence = std::vector<int>();
     father_genetic_sequence = std::vector<int>();
-
-    t_time = 0;
-    diag = std::vector<double>(10, 0.0);
 
     menu_tex = nullptr;
     generation_count_tex = nullptr;
@@ -63,37 +65,9 @@ SceneTrainingBR::SceneTrainingBR(){
     confirm_bg_color = {0x80, 0x80, 0x80, 0xFF};
 
     paused = false;
-}
+};
 
-void SceneTrainingBR::render(SDL_Renderer* rend){
-    int gen = std::max(0, std::min(9999, generation));
-    // int gen = 152;
-
-    SDL_SetRenderDrawColor(rend, menu_bg_color.r, menu_bg_color.g, menu_bg_color.b, menu_bg_color.a);
-    SDL_RenderFillRect(rend, &menu_bg);
-    SDL_SetRenderDrawColor(rend, menu_color.r, menu_color.g, menu_color.b, menu_color.a);
-    SDL_RenderCopy(rend, menu_tex, NULL, &menu_rect);
-
-    SDL_SetRenderDrawColor(rend, generation_count_bg_color.r, generation_count_bg_color.g, generation_count_bg_color.b, generation_count_bg_color.a);
-    SDL_RenderFillRect(rend, &generation_count_bg);
-    SDL_SetRenderDrawColor(rend, generation_count_color.r, generation_count_color.g, generation_count_color.b, generation_count_color.a);
-    SDL_RenderCopy(rend, generation_count_tex, NULL, &generation_count_rect);
-
-    int digits = gen == 0 ? 1 : (int)std::log10((double)gen) + 1;
-    for(int i = digits-1; i >= 0; i--){
-        int d = (gen / (int)std::pow(10, i)) % 10;
-        SDL_RenderCopy(rend, dig_tex[d], NULL, &dig_rect[digits - i - 1]);
-    }
-
-    SDL_SetRenderDrawColor(rend, confirm_bg_color.r, confirm_bg_color.g, confirm_bg_color.b, confirm_bg_color.a);
-    SDL_RenderFillRect(rend, &confirm_bg);
-    SDL_SetRenderDrawColor(rend, confirm_color.r, confirm_color.g, confirm_color.b, confirm_color.a);
-    SDL_RenderCopy(rend, confirm_tex, NULL, &confirm_rect);
-}
-
-
-void SceneTrainingBR::init(int r, int c, int count, int s_w, int s_h, int depth, SDL_Renderer* rend, std::vector<int> seq, PieceRandomizer pr, int gen){
-
+void SceneTrainingSV::init(int r, int c, int count, int s_w, int s_h, int depth, SDL_Renderer* rend, std::vector<int> seq, PieceRandomizer pr, int gen){
     generation = gen;
 
     TTF_Font* font = TTF_OpenFont("HunDIN1451.ttf", 20);
@@ -198,7 +172,6 @@ void SceneTrainingBR::init(int r, int c, int count, int s_w, int s_h, int depth,
     assert(predict_tile_size >= 5);
 
     AIGAME_L = std::vector<AIGame>(count);
-    gmassoc = std::vector<int>(count, 0);
     for(int i = 0; i < count; i++){
         AIGAME_L[i] = AIGame(pr);
         std::vector<int> cross = crossover(seq, seq);
@@ -214,24 +187,74 @@ void SceneTrainingBR::init(int r, int c, int count, int s_w, int s_h, int depth,
         }
     }
 
-    for(int i = 0; i < count; i += 2){
-        AIGAME_L[i].set_enemy_game(&AIGAME_L[i+1]);
-        AIGAME_L[i+1].set_enemy_game(&AIGAME_L[i]);
-        gmassoc[i] = i+1;
-        gmassoc[i+1] = i;
-    }
-
     death_count = 0;
     death_status = std::vector<bool>(count, false);
     mother_genetic_sequence = seq;
     father_genetic_sequence = seq;
 
     paused = false;
+
+    line_timer = line_timer_initial;
+    line_timer_dur = line_timer_initial;
+    end_timer = end_timer_dur;
+
+};
+
+void SceneTrainingSV::render(SDL_Renderer* rend){
+    int gen = std::max(0, std::min(9999, generation));
+
+    SDL_SetRenderDrawColor(rend, menu_bg_color.r, menu_bg_color.g, menu_bg_color.b, menu_bg_color.a);
+    SDL_RenderFillRect(rend, &menu_bg);
+    SDL_SetRenderDrawColor(rend, menu_color.r, menu_color.g, menu_color.b, menu_color.a);
+    SDL_RenderCopy(rend, menu_tex, NULL, &menu_rect);
+
+    SDL_SetRenderDrawColor(rend, generation_count_bg_color.r, generation_count_bg_color.g, generation_count_bg_color.b, generation_count_bg_color.a);
+    SDL_RenderFillRect(rend, &generation_count_bg);
+    SDL_SetRenderDrawColor(rend, generation_count_color.r, generation_count_color.g, generation_count_color.b, generation_count_color.a);
+    SDL_RenderCopy(rend, generation_count_tex, NULL, &generation_count_rect);
+    int digits = gen == 0 ? 1 : (int)std::log10((double)gen) + 1;
+    for(int i = 0; i < digits; i++){
+        SDL_RenderCopy(rend, dig_tex[gen % 10], NULL, &dig_rect[i]);
+        gen /= 10;
+    }
+
+    SDL_SetRenderDrawColor(rend, confirm_bg_color.r, confirm_bg_color.g, confirm_bg_color.b, confirm_bg_color.a);
+    SDL_RenderFillRect(rend, &confirm_bg);
+    SDL_SetRenderDrawColor(rend, confirm_color.r, confirm_color.g, confirm_color.b, confirm_color.a);
+    SDL_RenderCopy(rend, confirm_tex, NULL, &confirm_rect);
 }
 
-void SceneTrainingBR::update(SDL_Renderer* rend, int dt, SDL_Event* event, bool* isRunning, int* state){
+void SceneTrainingSV::end_game(){
+    std::cout<<"SceneTrainingSV end_game"<<std::endl;
+    for(int i = 0; i < mother_genetic_sequence.size(); i++){
+        std::cout<<mother_genetic_sequence[i]<<" ";
+    }
+    std::cout<<std::endl;
 
-    
+    // end game
+    int prandseed = rand() % 100;
+    for(int i = 0; i < COUNT; i++){
+        AIGAME_L[i].reset();
+        std::vector<int> new_seq = crossover(mother_genetic_sequence, mother_genetic_sequence);
+        AIGAME_L[i].set_genetic_sequence(new_seq);
+        AIGAME_L[i].piece_randomizer.pieceIndex = prandseed;
+    }
+
+    AIGAME_L[0].set_genetic_sequence(mother_genetic_sequence);
+    // AIGAME_L[COUNT-1].set_genetic_sequence(father_genetic_sequence);
+
+    death_count = 0;
+    death_status = std::vector<bool>(COUNT, false);
+
+    line_timer = line_timer_initial;
+    line_timer_dur = line_timer_initial;
+    end_timer = end_timer_dur;
+
+    generation++;
+}
+
+void SceneTrainingSV::update(SDL_Renderer* rend, int dt, SDL_Event* event, bool* isRunning, int* state){
+
     while (SDL_PollEvent(event)) {
         if (event->type == SDL_QUIT) {
             *isRunning = false;
@@ -280,94 +303,69 @@ void SceneTrainingBR::update(SDL_Renderer* rend, int dt, SDL_Event* event, bool*
         }
     }
 
-    double begin = clock();
-
-    render(rend);
-
     if(paused){
-        for(int i = 0; i < COUNT; i++){
-            AIGAME_L[i].draw(rend);
-        }
         return;
     }
 
+    render(rend);
+    // std::cout<<"SceneTrainingSV update"<<std::endl;
+    line_timer -= dt;
+
+    // send line
+    if(line_timer <= 0){
+        line_timer = line_timer_dur;
+        int lines = std::rand() % 4 + 1;
+        for(int i = 0; i < COUNT; i++){
+            AIGAME_L[i].on_enemy_line_sent(lines);
+        }
+        line_timer_dur = (line_timer_dur * line_timer_factor);
+    }
+
+    // update all AIGames
+    for(int i = 0; i < R; i++){
+        for(int j = 0; j < C; j++){
+            AIGAME_L[i*C+j].updateDeltaTime(dt, rend);
+        }
+    }
+
+    // check max score
     for(int i = 0; i < COUNT; i++){
-        AIGAME_L[i].updateDeltaTime(dt, rend, true, &this->diag);
-    }
-
-    for(int i = 0; i < COUNT; i++) if(!AIGAME_L[i].alive && !death_status[i]){
-        death_status[i] = true;
-        death_count += 1;
-        gmassoc[gmassoc[i]] = -1;
-        gmassoc[i] = -1;
-
-        if(death_count == COUNT-1){
-            father_genetic_sequence = AIGAME_L[i].genetic_sequence;
-
-            for(int j = 0; j < COUNT; j++) if(!death_status[j]){
-                mother_genetic_sequence = AIGAME_L[j].genetic_sequence;
-
-                generation += 1;
-
-                int prand_seed = std::rand() % 100;
-
-                for(int k = 0; k < COUNT; k++){
-                    AIGAME_L[k].reset(prand_seed);
-                    std::vector<int> cross = crossover(mother_genetic_sequence, mother_genetic_sequence);
-                    AIGAME_L[k].set_genetic_sequence(cross);
+        if(AIGAME_L[i].lifetime_lines_sent >= score_threshold){
+            end_timer = -1;
+            mother_genetic_sequence = AIGAME_L[i].genetic_sequence;
+            int max_score = -1;
+            int max_score_index = -1;
+            for(int j = 0; j < COUNT; j++){
+                if(AIGAME_L[j].lifetime_lines_sent > max_score){
+                    max_score = AIGAME_L[j].lifetime_lines_sent;
+                    max_score_index = j;
                 }
-
-                AIGAME_L[0].set_genetic_sequence(mother_genetic_sequence);
-                // AIGAME_L[COUNT-1].set_genetic_sequence(father_genetic_sequence);
-
-                std::cout<<"MOTHER: ";
-                for(int k = 0; k < mother_genetic_sequence.size(); k++){
-                    std::cout<<mother_genetic_sequence[k]<<" ";
-                }
-                std::cout<<std::endl;
-
-                death_count = 0;
-                death_status = std::vector<bool>(COUNT, false);
-
-                for(int k = 0; k < COUNT; k += 2){
-                    AIGAME_L[k].set_enemy_game(&AIGAME_L[k+1]);
-                    AIGAME_L[k+1].set_enemy_game(&AIGAME_L[k]);
-                    gmassoc[k] = k+1;
-                    gmassoc[k+1] = k;
-                }
-                
-                return;
-            }   
-        }
-
-        
-    }
-
-    // check limbo
-    for(int i = 0; i < COUNT; i++)      if(AIGAME_L[i].limbo){
-        for(int j = 0; j < COUNT; j++)  if(i != j && AIGAME_L[j].limbo){
-            int prand_seed = std::rand() % 100;
-            AIGAME_L[i].reset(prand_seed);
-            AIGAME_L[j].reset(prand_seed);
-            AIGAME_L[i].set_enemy_game(&AIGAME_L[j]);
-            AIGAME_L[j].set_enemy_game(&AIGAME_L[i]);
-            gmassoc[i] = j;
-            gmassoc[j] = i;
-            break;
+            }
+            father_genetic_sequence = AIGAME_L[max_score_index].genetic_sequence;
+            end_game();
+            return;
         }
     }
 
-    t_time += (double)(clock() - begin) / CLOCKS_PER_SEC;
-
-    if(t_time > 20){
-        t_time = 0;
-        std::cout<<"TIME: "<<t_time<<std::endl;
-        std::cout<<"DRAW TIME: "<<this->diag[DIA_DRAW]<<std::endl;
-        // std::cout<<"EVAL TIME: "<<this->diag[DIA_EVAL]<<std::endl;
-        std::cout<<"CHOOSE TIME: "<<this->diag[DIA_CHOOSE]<<std::endl;
-        std::cout<<"d2 TIME: "<<this->diag[4]<<std::endl;
-        this->diag[DIA_DRAW] = 0;
-        this->diag[DIA_EVAL] = 0;
-        this->diag[DIA_CHOOSE] = 0;
+    // check death statuses
+    for(int i = 0; i < COUNT; i++){
+        if(!AIGAME_L[i].alive && !death_status[i]){
+            death_status[i] = true;
+            death_count++;
+            if(death_count == COUNT-1){
+                // end game
+                end_timer = -1;
+                father_genetic_sequence = AIGAME_L[i].genetic_sequence;
+                for(int j = 0; j < COUNT; j++){
+                    if(!death_status[j]){
+                        mother_genetic_sequence = AIGAME_L[j].genetic_sequence;
+                        end_game();
+                        return;
+                    }
+                }
+            }
+        }
     }
+
+    // check end game conditions
 }

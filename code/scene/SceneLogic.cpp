@@ -7,12 +7,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_timer.h>
 
-#include "Game.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
+#include "../tetris_lib/Game.h"
+#include "../tetris_lib/Piece.h"
+#include "../tetris_lib/Collision.h"
+#include "../tetris_lib/constants.h"
+#include "../model/AIHeuristics.h"
+#include "../model/AIModel.h"
 #include "SceneTrainingBR.h"
 #include "SceneTrainingSC.h"
 #include "SceneTrainingSV.h"
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         printf("error initializing TTF: %s\n", TTF_GetError());
     }
 
-    SDL_Window *window = SDL_CreateWindow("Tetris",
+    SDL_Window *window = SDL_CreateWindow("Tetr.AI",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
                                           SCREEN_WIDTH, SCREEN_HEIGHT, 

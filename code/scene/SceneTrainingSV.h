@@ -2,35 +2,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_timer.h>
 
-#include "Game.h"
-#include "Piece.h"
-#include "Collision.h"
-#include "constants.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
+#include "../tetris_lib/Game.h"
+#include "../tetris_lib/Piece.h"
+#include "../model/AIModel.h"
 
 class SceneTrainingSV{
     public:
-        
-        // std::vector<AIGame> AIGAME_L;
-        // std::vector<int> gmassoc;
-        // std::vector<std::vector<int>> grid;
-        // std::vector<int> genes;
-
-        // int death_count;
-        // std::vector<bool> death_status;
-        // std::vector<int> mother_genetic_sequence;
-        // std::vector<int> father_genetic_sequence;
-
-        // int R,C,COUNT;
-
-        // SceneTrainingBR();
-        // void init(int r, int c, int count, int s_w, int s_h, SDL_Renderer* rend, std::vector<int> seq = get_prebuilt(), PieceRandomizer pr = PieceRandomizer(100));
-        // void update(SDL_Renderer* rend, int dt);
-
-        // double t_time;
-        // std::vector<double> diag;
-
         std::vector<AIGame> AIGAME_L;
         double line_timer, line_timer_dur, line_timer_factor, line_timer_initial;
         int score_threshold, end_timer, end_timer_dur;

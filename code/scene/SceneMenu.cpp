@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
 
-#include "SceneMenu.h"
-#include "Game.h"
-#include "AIHeuristics.h"
-#include "AIModel.h"
+#include "../tetris_lib/Game.h"
+#include "../model/AIHeuristics.h"
+#include "../model/AIModel.h"
 #include "SCENENAV.h"
+#include "SceneMenu.h"
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_ttf.h"

@@ -1,7 +1,7 @@
 #ifndef AIHEURISTICS_H
 #define AIHEURISTICS_H
 
-#include "Piece.h"
+#include "../tetris_lib/Piece.h"
 #include <vector>
 
 using namespace std;
