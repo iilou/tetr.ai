@@ -19,6 +19,10 @@ Tetris AI app that can train a Tetris bot that can outperform the vast majority 
 
 
 
+**[  VERSION UPDATES  ]**
+
+1.0 -> Naive O(2^n) approach, still works for 4(2 on display) depth
+1.1 (in progress) -> Will implement MCTS to optimize further, and will improve the ui, with images, better sprites, and audio.
 
 
 **[  REQUIRMENTS  ]**
